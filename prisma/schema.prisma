@@ -1,12 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -14,18 +8,105 @@ datasource db {
 }
 
 model Company {
-  id          String      @id @default(uuid())
-  name        String
-  slug        String      @unique
-  isActive    Boolean     @default(true)
+  id           String         @id @default(uuid())
+  name         String
+  slug         String         @unique
+  isActive     Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  channels     Channel[]
+  conversaions Conversation[]
+  custimers    Customer[]
+  users        User[]
+}
 
-  createdAt   DateTime    @default(now())
-  updatedAt   DataTime    @updatedAt
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  password     String
+  name         String?
+  role         UserRole  @default(AGENT)
+  isActive     Boolean   @default(true)
+  companyId    String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  messagesSent Message[] @relation("UserMessages")
+  company      Company   @relation(fields: [companyId], references: [id])
+}
 
-  users           User[]
-  custimers       Customer[]
-  channels        Channel[]
-  conversaions    Conversation[]
+model Customer {
+  id            String         @id @default(uuid())
+  name          String?
+  phone         String         @unique
+  email         String?        @unique
+  isActive      Boolean        @default(true)
+  companyId     String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  conversations Conversation[]
+  company       Company        @relation(fields: [companyId], references: [id])
+}
 
+model Conversation {
+  id         String    @id @default(uuid())
+  topic      String?
+  isActive   Boolean   @default(true)
+  companyId  String
+  customerId String
+  channelId  String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  channel    Channel   @relation(fields: [channelId], references: [id])
+  company    Company   @relation(fields: [companyId], references: [id])
+  customer   Customer  @relation(fields: [customerId], references: [id])
+  messages   Message[]
+}
 
+model Channel {
+  id            String         @id @default(uuid())
+  type          ChannelType
+  name          String
+  isActive      Boolean        @default(true)
+  companyId     String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  company       Company        @relation(fields: [companyId], references: [id])
+  conversations Conversation[]
+}
+
+model Message {
+  id             String           @id @default(uuid())
+  conversationId String
+  senderId       String?
+  content        String?
+  attachmentUrl  String?
+  direction      MessageDirection @default(INCOMING)
+  status         MessageStatus    @default(SENT)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  conversation   Conversation     @relation(fields: [conversationId], references: [id])
+  sender         User?            @relation("UserMessages", fields: [senderId], references: [id])
+}
+
+enum UserRole {
+  ADMIN
+  AGENT
+}
+
+enum ChannelType {
+  WHATSAPP
+  SMS
+  EMAIL
+  INSTAGRAM
+}
+
+enum MessageDirection {
+  INCOMING
+  OUTGOING
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
 }
