@@ -1,112 +1,56 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-model Company {
-  id           String         @id @default(uuid())
-  name         String
-  slug         String         @unique
-  isActive     Boolean        @default(true)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  channels     Channel[]
-  conversaions Conversation[]
-  custimers    Customer[]
-  users        User[]
-}
-
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  password     String
-  name         String?
-  role         UserRole  @default(AGENT)
-  isActive     Boolean   @default(true)
-  companyId    String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  messagesSent Message[] @relation("UserMessages")
-  company      Company   @relation(fields: [companyId], references: [id])
-}
+  id       String   @id @default(uuid())
+  email    String   @unique
+  password String
+  name     String?
+  role     UserRole @default(USER)
+  isActive Boolean  @default(true)
 
-model Customer {
-  id            String         @id @default(uuid())
-  name          String?
-  phone         String         @unique
-  email         String?        @unique
-  isActive      Boolean        @default(true)
-  companyId     String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  conversations Conversation[]
-  company       Company        @relation(fields: [companyId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sentMessages   Message[]      @relation("MessageSender")
+  conversationsA Conversation[] @relation("UserA")
+  conversationsB Conversation[] @relation("UserB")
 }
 
 model Conversation {
-  id         String    @id @default(uuid())
-  topic      String?
-  isActive   Boolean   @default(true)
-  companyId  String
-  customerId String
-  channelId  String
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  channel    Channel   @relation(fields: [channelId], references: [id])
-  company    Company   @relation(fields: [companyId], references: [id])
-  customer   Customer  @relation(fields: [customerId], references: [id])
-  messages   Message[]
-}
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
 
-model Channel {
-  id            String         @id @default(uuid())
-  type          ChannelType
-  name          String
-  isActive      Boolean        @default(true)
-  companyId     String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  company       Company        @relation(fields: [companyId], references: [id])
-  conversations Conversation[]
+  userAId String
+  userBId String
+
+  userA User @relation("UserA", fields: [userAId], references: [id])
+  userB User @relation("UserB", fields: [userBId], references: [id])
+
+  messages Message[]
+
+  @@unique([userAId, userBId])
 }
 
 model Message {
-  id             String           @id @default(uuid())
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  senderId       String
   conversationId String
-  senderId       String?
-  content        String?
-  attachmentUrl  String?
-  direction      MessageDirection @default(INCOMING)
-  status         MessageStatus    @default(SENT)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  conversation   Conversation     @relation(fields: [conversationId], references: [id])
-  sender         User?            @relation("UserMessages", fields: [senderId], references: [id])
+
+  sender       User         @relation("MessageSender", fields: [senderId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id])
 }
 
 enum UserRole {
+  USER
   ADMIN
-  AGENT
-}
-
-enum ChannelType {
-  WHATSAPP
-  SMS
-  EMAIL
-  INSTAGRAM
-}
-
-enum MessageDirection {
-  INCOMING
-  OUTGOING
-}
-
-enum MessageStatus {
-  SENT
-  DELIVERED
-  READ
 }

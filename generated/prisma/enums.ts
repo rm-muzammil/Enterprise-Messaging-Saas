@@ -10,35 +10,8 @@
 */
 
 export const UserRole = {
-  ADMIN: 'ADMIN',
-  AGENT: 'AGENT'
+  USER: 'USER',
+  ADMIN: 'ADMIN'
 } as const
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
-
-
-export const ChannelType = {
-  WHATSAPP: 'WHATSAPP',
-  SMS: 'SMS',
-  EMAIL: 'EMAIL',
-  INSTAGRAM: 'INSTAGRAM'
-} as const
-
-export type ChannelType = (typeof ChannelType)[keyof typeof ChannelType]
-
-
-export const MessageDirection = {
-  INCOMING: 'INCOMING',
-  OUTGOING: 'OUTGOING'
-} as const
-
-export type MessageDirection = (typeof MessageDirection)[keyof typeof MessageDirection]
-
-
-export const MessageStatus = {
-  SENT: 'SENT',
-  DELIVERED: 'DELIVERED',
-  READ: 'READ'
-} as const
-
-export type MessageStatus = (typeof MessageStatus)[keyof typeof MessageStatus]

@@ -8,10 +8,5 @@
  *
  * 🟢 You can import this file directly.
  */
-export type * from './models/Company.js'
 export type * from './models/User.js'
-export type * from './models/Customer.js'
-export type * from './models/Conversation.js'
-export type * from './models/Channel.js'
-export type * from './models/Message.js'
 export type * from './commonInputTypes.js'
